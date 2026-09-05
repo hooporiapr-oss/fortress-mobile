@@ -81,7 +81,7 @@ var PRODUCT = 'fortress-mobile';
 // these game files are shared as-is from the original mobile site
 // and already look for this exact key.
 if (localStorage.getItem('rct-mobile-pass') === '1') {
-  window.location.replace('hub.html');
+  window.location.replace('fortress-mobile-hub.html');
 }
 
 function tryEnter(){
@@ -119,7 +119,7 @@ function tryEnter(){
     localStorage.setItem('rct-mobile-pass','1');
     localStorage.setItem('rct-mobile-license', input.toUpperCase());
     localStorage.setItem('rct-mobile-school', lic.school_name || '');
-    window.location.href = 'hub.html';
+    window.location.href = 'fortress-mobile-hub.html';
   })
   .catch(function(){
     reject('Connection problem — please try again');
