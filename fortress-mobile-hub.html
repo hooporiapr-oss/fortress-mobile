@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+if (localStorage.getItem('rct-mobile-pass') !== '1') {
+  window.location.replace('index.html');
+}
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>The Fortress Mobile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{--gold:#FFD700;--orange:#FF6B35;--dark:#0a0a0f;--card:#111118;--text:#fff;--muted:#8892a0;--border:rgba(255,255,255,0.1)}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);color:var(--text);touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;overflow-x:hidden}
+  #strobe{position:fixed;inset:0;z-index:1;pointer-events:none;background:var(--gold);opacity:0;transition:opacity .07s ease-out}
+  #dots{position:fixed;inset:0;z-index:2;pointer-events:none;overflow:hidden}
+  .beat-dot{position:absolute;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#ffe066,var(--gold));box-shadow:0 0 28px rgba(255,215,0,.9);opacity:0}
+  @keyframes beatDotFly{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}100%{opacity:0;transform:translate(-50%,-50%) scale(.5)}}
+  #sound-toggle{position:fixed;top:calc(12px + env(safe-area-inset-top));right:14px;z-index:50;width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,215,0,.35);background:rgba(255,255,255,.06);color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+  #sound-toggle.muted{opacity:.55}
+  #hub{position:relative;z-index:10;min-height:100dvh;padding:calc(28px + env(safe-area-inset-top)) 18px calc(30px + env(safe-area-inset-bottom))}
+  .hub-head{text-align:center;margin-bottom:26px}
+  .hub-kicker{font-size:.66rem;font-weight:900;letter-spacing:.4em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;text-shadow:0 0 20px rgba(255,215,0,.8)}
+  .hub-title{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:4px;background:linear-gradient(135deg,var(--gold),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .hub-sub{font-size:.7rem;color:var(--muted);margin-top:10px}
+
+  .handle-label{font-size:.6rem;font-weight:900;letter-spacing:.3em;text-transform:uppercase;color:#8892a0;margin:24px 0 10px;text-align:center}
+  .handle-card{
+    display:block;max-width:440px;margin:0 auto 12px;padding:18px 20px;
+    border-radius:14px;text-decoration:none;color:var(--text);
+    background:linear-gradient(135deg,rgba(255,215,0,.14),rgba(255,107,53,.08));
+    border:1.5px solid rgba(255,215,0,.4);
+  }
+  .handle-card:active{transform:scale(.98)}
+  .handle-card-tag{font-family:'Bebas Neue',sans-serif;font-size:.66rem;letter-spacing:2px;color:var(--gold);margin-bottom:4px}
+  .handle-card-name{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:2px;color:#fff}
+  .handle-card-desc{font-size:.72rem;color:var(--muted);margin-top:6px;line-height:1.4}
+
+  .standings-card{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    max-width:440px;margin:0 auto 18px;padding:14px 18px;
+    border-radius:14px;text-decoration:none;
+    background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.3);
+  }
+  .standings-card:active{transform:scale(.98)}
+  .standings-card-text{font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:1.5px;color:var(--gold)}
+
+  .hub-foot{text-align:center;margin-top:28px;font-size:.6rem;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#4a5058}
+  .hub-foot b{color:var(--muted);font-style:italic}
+  #site-footer{text-align:center;margin-top:14px;padding-bottom:8px}
+  .footer-copy{font-size:.58rem;font-weight:700;letter-spacing:.04em;color:#4a5058}
+</style>
+</head>
+<body>
+<div id="strobe"></div>
+<div id="dots"></div>
+<button id="sound-toggle" onclick="toggleSound()" aria-label="Toggle sound" title="Toggle beat">🔊</button>
+<div id="hub">
+  <div class="hub-head">
+    <div class="hub-kicker">🧠 Memory Basketball</div>
+    <div class="hub-title">THE FORTRESS MOBILE</div>
+    <div class="hub-sub">Ready to play</div>
+  </div>
+
+  <div class="handle-label">Featured Challenge</div>
+  <a class="handle-card" href="001-fortress.html">
+    <div class="handle-card-tag">MEMORY &middot; RHYTHM</div>
+    <div class="handle-card-name">THE FORTRESS</div>
+    <div class="handle-card-desc">Watch a sequence of balls light up, then repeat it exactly. Every round adds one more — how far can you go?</div>
+  </a>
+  <a class="standings-card" href="001-fortress.html#standings">
+    <span class="standings-card-text">🏆 View Standings</span>
+  </a>
+
+  <div class="hub-foot">Powered by <b>Gostar Digital</b></div>
+  <div id="site-footer">
+    <div class="footer-copy">© Copyright Gostar Digital LLC. All Rights Reserved.</div>
+  </div>
+</div>
+
+<script>
+var $=function(id){return document.getElementById(id)};
+var BPM=120, beatMs=60000/BPM;
+var audioCtx=null, audioReady=false, soundOn=true;
+function toggleSound(){
+  soundOn=!soundOn;
+  var b=$('sound-toggle');
+  if(soundOn){ b.textContent='🔊'; b.classList.remove('muted'); initAudio(); }
+  else { b.textContent='🔇'; b.classList.add('muted'); }
+}
+function initAudio(){ if(audioReady)return; try{ audioCtx=new(window.AudioContext||window.webkitAudioContext)(); audioReady=true; }catch(e){} }
+['pointerdown','keydown','touchstart'].forEach(function(evt){ window.addEventListener(evt, initAudio, {once:false}); });
+function beatClick(){
+  if(!soundOn||!audioCtx)return;
+  try{
+    var o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.type='sine'; o.frequency.value=120;
+    g.gain.setValueAtTime(0.0001,audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.16,audioCtx.currentTime+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+0.13);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime+0.14);
+  }catch(e){}
+}
+function beatTick(){
+  var st=$('strobe'); if(st){ st.style.opacity='.08'; setTimeout(function(){st.style.opacity='0'},70); }
+  spawnDot(); beatClick();
+}
+function spawnDot(){
+  var layer=$('dots'); if(!layer)return;
+  var d=document.createElement('div'); d.className='beat-dot';
+  d.style.left=(10+Math.random()*80)+'%'; d.style.top=(10+Math.random()*70)+'%';
+  var dur=Math.round(beatMs*0.95);
+  d.style.animation='beatDotFly '+dur+'ms ease-out forwards';
+  layer.appendChild(d);
+  setTimeout(function(){ if(d&&d.parentNode) d.parentNode.removeChild(d); }, dur+60);
+}
+setInterval(beatTick, beatMs);
+beatTick();
+</script>
+</body>
+</html>
