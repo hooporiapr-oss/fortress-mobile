@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>The Fortress Mobile · Enter Code</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#FFD700;--orange:#FF6B35;--dark:#0a0a0f;--text:#fff;--muted:#8892a0}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);color:var(--text);touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;overflow:hidden}
+
+#strobe{position:fixed;inset:0;z-index:1;pointer-events:none;background:var(--gold);opacity:0;transition:opacity .07s ease-out}
+#dots{position:fixed;inset:0;z-index:2;pointer-events:none;overflow:hidden}
+.beat-dot{position:absolute;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#ffe066,var(--gold));box-shadow:0 0 28px rgba(255,215,0,.9);opacity:0}
+@keyframes beatDotFly{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}100%{opacity:0;transform:translate(-50%,-50%) scale(.5)}}
+
+#center{position:fixed;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
+.site-title{font-family:'Bebas Neue',sans-serif;font-size:2.4rem;letter-spacing:5px;background:linear-gradient(135deg,var(--gold),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px}
+.site-sub{font-size:.7rem;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:28px}
+
+.code-panel{width:100%;max-width:340px}
+.code-label{font-size:.68rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.code-note{font-size:.68rem;color:var(--muted);margin-bottom:16px;line-height:1.4}
+.code-input{width:100%;padding:16px;border-radius:10px;border:2px solid rgba(255,215,0,.4);background:rgba(255,255,255,.06);color:#fff;font-size:1.5rem;font-weight:900;letter-spacing:.3em;text-transform:uppercase;text-align:center;font-family:'Courier New',monospace}
+.code-input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 24px rgba(255,215,0,.3)}
+.code-input.shake{animation:shake .35s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+
+.enter-btn{width:100%;margin-top:16px;padding:15px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--orange));color:#1a0f0f;font-size:.9rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.err{margin-top:14px;color:#ff8888;font-size:.82rem;font-weight:700;min-height:18px}
+.brandmark{margin-top:40px;font-size:.68rem;font-weight:900;letter-spacing:.3em;text-transform:uppercase;color:#4a5058}
+.brandmark b{color:var(--muted);font-style:italic}
+</style>
+</head>
+<body>
+
+<div id="strobe"></div>
+<div id="dots"></div>
+
+<div id="center">
+  <div class="site-title">THE FORTRESS MOBILE</div>
+  <div class="site-sub">Memory Basketball</div>
+
+  <div class="code-panel">
+    <div class="code-label">Access Code</div>
+    <div class="code-note">One-time entry — enter your code once and this device stays unlocked, so practicing from home stays quick.</div>
+    <input class="code-input" id="gate-code" maxlength="12" placeholder="• • • •" autocomplete="off" onkeydown="if(event.key==='Enter')tryEnter()">
+    <button class="enter-btn" onclick="tryEnter()">Unlock This Device →</button>
+    <div class="err" id="gate-err"></div>
+  </div>
+
+  <div class="brandmark">Powered by <b>Gostar Digital</b></div>
+</div>
+
+<script>
+var $=function(id){return document.getElementById(id)};
+
+// ══════════════════════════════════════════════════════
+//  LICENSE SYSTEM — codes are checked against Supabase.
+//  To issue / expire / revoke codes, use admin.html.
+//  Scoped to product='fortress-mobile' — a code issued for
+//  any other product will NOT unlock this gate, and this
+//  gate's own codes won't unlock any other product either,
+//  even though all licenses live in the same table.
+//
+//  Persists in localStorage (not sessionStorage), matching
+//  the same low-friction, unlock-once-per-device pattern the
+//  original mobile site used — the whole point here is quick
+//  practice from home, not a re-login every visit.
+// ══════════════════════════════════════════════════════
+var SUPABASE_URL = 'https://sdaphocueugzfvjovuxd.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkYXBob2N1ZXVnemZ2am92dXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MjQyMDgsImV4cCI6MjA5OTIwMDIwOH0.pDAzf4P6dD9eNEBlnP95SdF5BI-R84-Rdc0vKzYcn7M';
+var PRODUCT = 'fortress-mobile';
+// ══════════════════════════════════════════════════════
+
+// If this device already unlocked once, skip straight through —
+// no need to ever ask again on this device. Same gate-pass key the
+// game files themselves already check for (rct-mobile-pass), since
+// these game files are shared as-is from the original mobile site
+// and already look for this exact key.
+if (localStorage.getItem('rct-mobile-pass') === '1') {
+  window.location.replace('hub.html');
+}
+
+function tryEnter(){
+  var input = $('gate-code').value.trim();
+  if (!input){ return; }
+  $('gate-err').style.color = '';
+  $('gate-err').textContent = 'Checking…';
+
+  var url = SUPABASE_URL + '/rest/v1/licenses'
+    + '?select=code,expires_at,active,product,school_name'
+    + '&code=ilike.' + encodeURIComponent(input)
+    + '&active=eq.true'
+    + '&product=eq.' + PRODUCT;
+
+  fetch(url, {
+    headers: {
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+    }
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(rows){
+    var lic = (rows && rows.length) ? rows[0] : null;
+
+    if (!lic){ return reject('Invalid code — check with your administrator'); }
+
+    if (lic.expires_at){
+      var exp = new Date(lic.expires_at + 'T23:59:59');
+      if (new Date() > exp){ return reject('This license has expired'); }
+    }
+
+    // valid → unlock this device permanently, then enter. The school
+    // name travels with the device from here on — every game and
+    // the standings view downstream just read it back from here.
+    localStorage.setItem('rct-mobile-pass','1');
+    localStorage.setItem('rct-mobile-license', input.toUpperCase());
+    localStorage.setItem('rct-mobile-school', lic.school_name || '');
+    window.location.href = 'hub.html';
+  })
+  .catch(function(){
+    reject('Connection problem — please try again');
+  });
+}
+
+function reject(msg){
+  $('gate-err').style.color = '#ff8888';
+  $('gate-err').textContent = msg;
+  var box = $('gate-code');
+  box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake');
+  box.value=''; box.focus();
+}
+
+// ── 120 beat: visual (strobe + flying gold dots), matching the hub's own ambient effect ──
+var BPM = 120, beatMs = 60000/BPM;
+function beatTick(){
+  var st=$('strobe'); if(st){st.style.opacity='.10'; setTimeout(function(){st.style.opacity='0'},80)}
+  spawnDot();
+}
+function spawnDot(){
+  var layer=$('dots'); if(!layer) return;
+  var d=document.createElement('div');
+  d.className='beat-dot';
+  d.style.left=(8+Math.random()*84)+'%';
+  d.style.top=(8+Math.random()*74)+'%';
+  var dur=Math.round(beatMs*0.95);
+  d.style.animation='beatDotFly '+dur+'ms ease-out forwards';
+  layer.appendChild(d);
+  setTimeout(function(){ if(d&&d.parentNode) d.parentNode.removeChild(d) }, dur+60);
+}
+setInterval(beatTick, beatMs);
+beatTick();
+
+$('gate-code').focus();
+</script>
+</body>
+</html>
