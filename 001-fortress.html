@@ -85,10 +85,6 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
   box-shadow:inset 0 -8px 15px rgba(0,0,0,0.35),0 4px 12px rgba(0,0,0,0.4);
   cursor:pointer;border:none;outline:none;-webkit-tap-highlight-color:transparent
 }
-/* Five genuinely distinct ball tints, matching the desktop version's
-   own principle — each is the same basketball texture, recolored,
-   so the "read the color" memory challenge stays intact instead of
-   collapsing into five identical orange balls. */
 #conga0{--conga-color:#FFD700;--conga-glow:rgba(255,215,0,0.6);box-shadow:inset 0 -8px 15px rgba(0,0,0,0.35),0 0 15px rgba(255,215,0,0.2),0 4px 12px rgba(0,0,0,0.4)}
 #conga1{--conga-color:#FF6B35;--conga-glow:rgba(255,107,53,0.6);box-shadow:inset 0 -8px 15px rgba(0,0,0,0.35),0 0 15px rgba(255,107,53,0.2),0 4px 12px rgba(0,0,0,0.4)}
 #conga2{--conga-color:#FF1493;--conga-glow:rgba(255,20,147,0.6);box-shadow:inset 0 -8px 15px rgba(0,0,0,0.35),0 0 15px rgba(255,20,147,0.2),0 4px 12px rgba(0,0,0,0.4)}
@@ -361,7 +357,7 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 
 <div class="setup-screen" id="setupScreen">
 <div class="intro-nav-row">
-<a href="mobile-lab.html" class="back-btn">← Back</a>
+<a href="fortress-mobile-hub.html" class="back-btn">← Back</a>
 <div class="intro-nav-title">THE FORTRESS</div>
 <div style="width:68px"></div>
 </div>
@@ -381,7 +377,7 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 
 <div class="play-screen hidden" id="playScreen">
 <div class="play-header">
-<a href="mobile-lab.html" class="play-back-btn" id="playBackBtn" title="Home">⌂</a>
+<a href="fortress-mobile-hub.html" class="play-back-btn" id="playBackBtn" title="Home">⌂</a>
 <div class="play-mode-name" id="playModeName">FREEPLAY</div>
 <div class="play-bpm" id="playBpmLabel">90 BPM</div>
 </div>
@@ -404,7 +400,7 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 
 <div class="name-screen" id="nameScreen">
 <div class="intro-nav-row" style="position:absolute;top:16px;left:16px;right:16px;width:auto;margin:0">
-<a href="mobile-lab.html" class="back-btn">← Back</a>
+<a href="fortress-mobile-hub.html" class="back-btn">← Back</a>
 <div class="intro-nav-title">THE FORTRESS</div>
 <div style="width:68px"></div>
 </div>
@@ -431,7 +427,7 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 <button class="setup-stats-btn" id="endStandingsBtn" style="border:1px solid rgba(255,215,0,.35);border-radius:100px;padding:10px 18px;margin-top:12px;color:var(--gold)">🏆 View Standings</button>
 <div id="handleStandingsStatus" style="font-size:.7rem;font-weight:700;color:rgba(255,255,255,.4);margin-top:10px">Saving to standings…</div>
 <div style="display:flex;gap:12px;margin-top:14px">
-<a href="mobile-lab.html" class="setup-stats-btn" id="endHomeLink" style="border:1px solid rgba(255,255,255,.15);border-radius:100px;padding:10px 18px;text-decoration:none;display:inline-block">← Home</a>
+<a href="fortress-mobile-hub.html" class="setup-stats-btn" id="endHomeLink" style="border:1px solid rgba(255,255,255,.15);border-radius:100px;padding:10px 18px;text-decoration:none;display:inline-block">← Home</a>
 <button class="setup-stats-btn" id="endBackBtn" style="border:1px solid rgba(255,255,255,.15);border-radius:100px;padding:10px 18px">← Back</button>
 </div>
 </div>
@@ -462,11 +458,6 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 <script>
 (function(){
 var feedback=document.getElementById('feedback'),streakEl=document.getElementById('streak'),bestEl=document.getElementById('best'),scoreEl=document.getElementById('scoreVal'),congaRow=document.getElementById('congaRow'),confettiContainer=document.getElementById('confettiContainer'),milestone=document.getElementById('milestone'),gameArea=document.querySelector('.game-area');
-// 5×5 court — same proven court-rendering approach the other memory
-// games already use, reshaped to grid. Only 5 of the 25 cells are
-// ever actually part of the game: dead center, plus all four true
-// corners. The rest of the grid is pure court texture — never
-// lights up, never tappable.
 (function buildFiveCellCourt(){
   var court=document.getElementById('congaRow');
   var activeMap={
@@ -713,10 +704,6 @@ var finalTime=(performance.now()-runStartTime)/1000;
 showFinalScore(finalLevel,finalTime);
 }
 
-// The real, tracked end — one miss ends the whole run. The honest
-// save with the same lock-until-saved protection used everywhere
-// else, since leaving mid-save is exactly what silently loses
-// entries.
 function showFinalScore(finalLevel,finalTime){
   challengeResult.textContent=finalLevel>=15?'GOLDEN MEMORY! 🧠':finalLevel>=8?'GREAT JOB! 🔥':'GOOD TRY! 💪';
   challengeResult.className='challenge-result '+(finalLevel>=8?'win':'lose');
@@ -726,10 +713,6 @@ function showFinalScore(finalLevel,finalTime){
   playCongaRoll();launchConfetti();
   challengeComplete.classList.add('show');
 
-  // Navigation stays locked only for the brief window the save is
-  // actually in flight — leaving the page (tapping Home or View
-  // Standings) can abort a pending request before it completes, which
-  // is exactly the class of bug that was silently losing entries here.
   var statusEl=document.getElementById('handleStandingsStatus');
   var standingsBtn=document.getElementById('endStandingsBtn');
   var homeLink=document.getElementById('endHomeLink');
@@ -863,14 +846,8 @@ standingsScreen.classList.add('show');
 }
 }
 
-// ── standings ── Every run is now the tracked 4-quarter Game mode —
-// is a single, untracked run with no name and no standings entry.
 var SB_URL='https://sdaphocueugzfvjovuxd.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkYXBob2N1ZXVnemZ2am92dXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MjQyMDgsImV4cCI6MjA5OTIwMDIwOH0.pDAzf4P6dD9eNEBlnP95SdF5BI-R84-Rdc0vKzYcn7M';
-// Standings — its own dedicated table, matching the new score shape
-// exactly (a level reached, plus the real elapsed time it took to
-// get there) rather than reusing the old 4-quarter breakdown table,
-// which no longer reflects what's actually being played.
 var SB_TABLE='ritnome_mobile_fortress_standings';
 var currentPlayerName='';
 
@@ -882,10 +859,6 @@ function recordScoreToStandings(name,levelAchieved,timeSeconds){
     headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
     body:JSON.stringify({player_name:name,level_achieved:levelAchieved,time_seconds:timeSeconds,school_name:school})
   }).then(function(res){
-    // fetch() only rejects on a genuine network failure — a rejected
-    // insert (bad schema, RLS, etc.) still resolves normally with a
-    // non-2xx status, so this MUST be checked explicitly or a failed
-    // save looks identical to a successful one to the caller.
     if(!res.ok){
       return res.text().then(function(body){
         console.error('The Fortress standings write failed:',res.status,body);
@@ -910,10 +883,6 @@ function fetchStandings(){
       var best={};
       (rows||[]).forEach(function(r){
         var existing=best[r.player_name];
-        // A higher level always wins outright; among rows tied at a
-        // player's own best level, the faster time is what actually
-        // gets kept. A row with no recorded time never beats a real,
-        // timed one at the same level.
         var isBetter=false;
         if(!existing){
           isBetter=true;
@@ -995,7 +964,7 @@ document.getElementById('endStandingsBtn').addEventListener('click',function(){
   renderStandings();
 });
 document.getElementById('standingsBackBtn').addEventListener('click',function(){
-  window.location.href='mobile-lab.html';
+  window.location.href='fortress-mobile-hub.html';
 });
 document.getElementById('standingsRefreshBtn').addEventListener('click',function(){
   renderStandings();
@@ -1018,8 +987,6 @@ document.getElementById('playerNameInput').addEventListener('keydown',function(e
   if(e.key==='Enter')document.getElementById('nameContinueBtn').click();
 });
 
-// Play — the real, tracked run. A name is required
-// up front since this run genuinely gets saved to standings.
 document.getElementById('startFullGameBtn').onclick=function(){
   initAudio();
   var input=document.getElementById('playerNameInput');
@@ -1045,10 +1012,6 @@ function showFeedback(q){clearTimeout(feedbackTimeout);var t=q==='perfect'?'PERF
 
 tapCongas.forEach(function(c,i){c.addEventListener('touchstart',function(e){e.preventDefault();handleTap(i,c)},{passive:false});c.addEventListener('mousedown',function(e){e.preventDefault();handleTap(i,c)});c.addEventListener('touchend',function(e){e.preventDefault()},{passive:false})});
 
-// Lets the hub link straight into this screen (mobile-lab.html's
-// "View Standings" card for this game) without landing on setup
-// first — a direct #standings deep link, not a query param, since
-// that needs no server-side routing to work on a static host.
 if(window.location.hash==='#standings'){
   showScreen('standings');
   renderStandings();
