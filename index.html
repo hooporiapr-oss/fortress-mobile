@@ -29,6 +29,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
 
 .enter-btn{width:100%;margin-top:16px;padding:15px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--orange));color:#1a0f0f;font-size:.9rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.enter-btn:disabled{opacity:.6;cursor:default}
 .err{margin-top:14px;color:#ff8888;font-size:.82rem;font-weight:700;min-height:18px}
 .brandmark{margin-top:40px;font-size:.68rem;font-weight:900;letter-spacing:.3em;text-transform:uppercase;color:#4a5058}
 .brandmark b{color:var(--muted);font-style:italic}
@@ -47,7 +48,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
     <div class="code-label">Access Code</div>
     <div class="code-note">One-time entry — enter your code once and this device stays unlocked, so practicing from home stays quick.</div>
     <input class="code-input" id="gate-code" maxlength="12" placeholder="• • • •" autocomplete="off" onkeydown="if(event.key==='Enter')tryEnter()">
-    <button class="enter-btn" onclick="tryEnter()">Unlock This Device →</button>
+    <button class="enter-btn" id="gate-btn" onclick="tryEnter()">Unlock This Device →</button>
     <div class="err" id="gate-err"></div>
   </div>
 
@@ -65,10 +66,24 @@ var $=function(id){return document.getElementById(id)};
 //  gate's own codes won't unlock any other product either,
 //  even though all licenses live in the same table.
 //
+//  The licenses table is NOT readable from the browser. This
+//  page asks the database one question through the
+//  check_license function — "is this code good for this
+//  product?" — and gets back only a yes or no plus the school
+//  name. Nobody can list the codes, because nothing here can
+//  read the table. Expiry is judged inside that function, on
+//  the database's own clock.
+//
 //  Persists in localStorage (not sessionStorage), matching
 //  the same low-friction, unlock-once-per-device pattern the
 //  original mobile site used — the whole point here is quick
 //  practice from home, not a re-login every visit.
+//
+//  Note the consequence of that choice: because the unlock is
+//  remembered on the device rather than re-checked each visit,
+//  a license that expires or is revoked later does not lock a
+//  device that already got in. The check below re-runs only
+//  when someone enters a code for the first time on a device.
 // ══════════════════════════════════════════════════════
 var SUPABASE_URL = 'https://sdaphocueugzfvjovuxd.supabase.co';
 var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkYXBob2N1ZXVnemZ2am92dXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MjQyMDgsImV4cCI6MjA5OTIwMDIwOH0.pDAzf4P6dD9eNEBlnP95SdF5BI-R84-Rdc0vKzYcn7M';
@@ -84,33 +99,35 @@ if (localStorage.getItem('rct-mobile-pass') === '1') {
   window.location.replace('fortress-mobile-hub.html');
 }
 
+var checking = false;
+
 function tryEnter(){
+  if (checking) return;
+
   var input = $('gate-code').value.trim();
   if (!input){ return; }
+
+  checking = true;
+  $('gate-btn').disabled = true;
   $('gate-err').style.color = '';
   $('gate-err').textContent = 'Checking…';
 
-  var url = SUPABASE_URL + '/rest/v1/licenses'
-    + '?select=code,expires_at,active,product,school_name'
-    + '&code=ilike.' + encodeURIComponent(input)
-    + '&active=eq.true'
-    + '&product=eq.' + PRODUCT;
-
-  fetch(url, {
+  fetch(SUPABASE_URL + '/rest/v1/rpc/check_license', {
+    method: 'POST',
     headers: {
       'apikey': SUPABASE_ANON_KEY,
-      'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
-    }
+      'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ p_code: input, p_product: PRODUCT })
   })
-  .then(function(r){ return r.json(); })
-  .then(function(rows){
-    var lic = (rows && rows.length) ? rows[0] : null;
-
-    if (!lic){ return reject('Invalid code — check with your administrator'); }
-
-    if (lic.expires_at){
-      var exp = new Date(lic.expires_at + 'T23:59:59');
-      if (new Date() > exp){ return reject('This license has expired'); }
+  .then(function(r){
+    if (!r.ok) throw new Error('lookup failed');
+    return r.json();
+  })
+  .then(function(lic){
+    if (!lic || !lic.ok){
+      return reject('Invalid or expired code — check with your administrator');
     }
 
     // valid → unlock this device permanently, then enter. The school
@@ -122,11 +139,16 @@ function tryEnter(){
     window.location.href = 'fortress-mobile-hub.html';
   })
   .catch(function(){
+    // A network or server failure is a different problem from a bad
+    // code, and saying so saves someone hunting for a typo that
+    // isn't there.
     reject('Connection problem — please try again');
   });
 }
 
 function reject(msg){
+  checking = false;
+  $('gate-btn').disabled = false;
   $('gate-err').style.color = '#ff8888';
   $('gate-err').textContent = msg;
   var box = $('gate-code');
